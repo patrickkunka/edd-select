@@ -128,8 +128,6 @@
         self._select = el;
 
         self.init();
-
-        console.log(self);
     };
 
     /**
@@ -530,7 +528,7 @@
 
             self._helpers.on(self._eddHead, 'click', function(e) {
                 if (self._helpers.hasClass(e.target, ns+self.markup.tagClass)) {
-                    var index = self._helpers.index(e.target, ns+self.markup.itemClass);
+                    var index = self._helpers.index(e.target, ns+self.markup.tagClass);
 
                     self.select(self._selectedIndices[index]);
                 } else {
@@ -597,6 +595,8 @@
             self._helpers.on(self._eddItemsWrapper, 'scroll', function(e) {
                 self._renderScrollClasses();
             });
+
+            // Item handlers
 
             self._helpers.forEachItem(self, function() {
                 self._helpers.on(this, 'mouseenter', function() {
