@@ -105,6 +105,7 @@
                 _eddBody: null,
                 _eddItemsWrapper: null,
                 _eddItems: [],
+                _eddForm: null,
 
                 _$eddBody: null
             };
@@ -184,7 +185,7 @@
                     proto._hasMouse = true;
 
                     for (var i = 0, instance; instance = proto._instances[i]; i++) {
-                        instance.nativeMode = false;
+                        instance._nativeMode = false;
 
                         proto._helpers.removeClass(instance._eddWrapper, 'touch');
                     }
@@ -242,7 +243,7 @@
             /* Tests
             ---------------------------------------------------------------------- */
 
-            //EddSelect.prototype._helpers.on(document.documentElement, 'mousemove', detectInput);
+            EddSelect.prototype._helpers.on(document.documentElement, 'mousemove', detectInput);
 
         },
 
@@ -278,6 +279,8 @@
             EddSelect.prototype._instances.push(self);
 
             self._instanceIndex = EddSelect.prototype._instances.length;
+
+            self._form = self._helpers.closestParent(self._select, null, 'form');
 
             self._parseSelect();
             self._renderDropDown();
@@ -602,11 +605,11 @@
             // Keydown/up event while focused
 
             self._helpers.on(self._select, 'keydown', function(e) {
-                self._keydown(e);
+                !self._nativeMode && self._keydown(e);
             });
 
             self._helpers.on(self._select, 'keyup', function(e) {
-                self._keyup(e);
+                !self._nativeMode && self._keyup(e);
             });
 
             // Focus event
@@ -630,6 +633,12 @@
 
             self._helpers.on(self._eddItemsWrapper, 'scroll', function(e) {
                 self._renderScrollClasses();
+            });
+
+            // Reset event
+
+            self._form && self._helpers.on(self._form, 'reset', function() {
+                self.select(false);
             });
 
             // Item handlers
@@ -659,6 +668,8 @@
 
                 self._helpers.on(this, 'click', function(e) {
                     var index = self._indexAll(e.target);
+                    
+                    self.select(index);
                 });
             });
         },
@@ -944,6 +955,8 @@
                 self._selectedIndices = [];
 
                 self._updateLabel();
+
+                !self._nativeMode && (self._select.options[0].selected = true);
             }
 
             // TODO: allow passing of an array of multiple keys to select/deselect
@@ -1170,10 +1183,12 @@
              * @since 3.0.0
              */
 
-            closestParent: function(el, cls) {
+            closestParent: function(el, cls, tag) {
                 var parent = el.parentNode;
                 while (parent && parent != document.body) {
-                    if (parent && this.hasClass(parent, cls)) {
+                    if (cls && parent && this.hasClass(parent, cls)) {
+                        return parent;
+                    } else if (tag && parent && parent.nodeName === tag.toUpperCase()) {
                         return parent;
                     } else {
                        parent = parent.parentNode;
