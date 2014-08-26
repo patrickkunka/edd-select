@@ -1,4 +1,6 @@
-(function(window, document) {
+(function(window, document, undef) {
+
+    'use strict';
 
     /**
      * EddSelect
@@ -80,7 +82,7 @@
                 _multiple: false,
                 _grouped: false,
                 _autofocus: false,
-                _nativeMode: false,
+                _nativeMode: true,
                 _selectedIndices: [],
                 _focusedIndex: false,
                 _inFocus: false,
@@ -127,7 +129,7 @@
 
         self._select = el;
 
-        self.init();
+        self._init();
     };
 
     /**
@@ -164,79 +166,10 @@
         ---------------------------------------------------------------------- */
 
         _instances: [],
+        _hasMouse: false,
 
         /* Static Methods
         ---------------------------------------------------------------------- */
-
-        /**
-         * trawlDOM
-         * @since 3.0.0
-         */
-
-        _trawlDOM: function() {
-            var self = this,
-                selects = document.getElementsByTagName('select');
-
-            for (var i = 0, select; select = selects[i]; i++) {
-                if (self._helpers.hasClass(select, 'edd-select')) {
-                    new EddSelect(select);
-
-                    // TODO: allow for a custom configuration for autoloaded selects
-                }
-            }
-        },
-
-        /* Private Methods
-        ---------------------------------------------------------------------- */
-
-        /**
-         * init
-         * @since 3.0.0
-         */
-
-        init: function() {
-            var self = this;
-
-            EddSelect.prototype._instances.push(self);
-
-            self._instanceIndex = EddSelect.prototype._instances.length;
-
-            self._platformDetect();
-
-            self._parseSelect();
-            self._renderDropDown();
-            self._updateLabel();
-            self._bindEvents();
-
-            if (
-                self.animation.mixItUp &&
-                !self._grouped &&
-                typeof (jQuery || $) !== 'undefined' &&
-                typeof $.MixItUp !== 'undefined'
-            ) {
-                var config = (typeof self.animation.mixItUp === 'object') ? self.animation.mixItUp : {
-                    selectors: {
-                        target: '.'+self.markup.nameSpace + self.markup.itemClass
-                    },
-                    layout: {
-                        display: 'block'
-                    },
-                    load: {
-                        filter: 'none'
-                    },
-                    animation: {
-                        effects: 'fade translateY(-300%) translateZ(-300px) stagger(20ms)',
-                        duration: 150
-                    }
-                };
-
-                $(self._eddWrapper).addClass('mix-it-up');
-
-                self._$eddBody = $(self._eddBody).mixItUp(config);
-            } else {
-                self.animation.mixItUp = false;
-            }
-        },
 
         /**
          * platformDetect
@@ -244,7 +177,20 @@
          */
 
         _platformDetect: function() {
-            var self = this;
+            var self = this,
+                detectInput = function(e) {
+                    var proto = EddSelect.prototype;
+
+                    proto._hasMouse = true;
+
+                    for (var i = 0, instance; instance = proto._instances[i]; i++) {
+                        instance.nativeMode = false;
+
+                        proto._helpers.removeClass(instance._eddWrapper, 'touch');
+                    }
+                    
+                    proto._helpers.off(document.documentElement, 'mousemove', detectInput);
+                };
 
             /* Polyfills
             ---------------------------------------------------------------------- */
@@ -254,7 +200,7 @@
              * @since 3.0.0
              */
 
-            if (typeof self._select.previousElementSibling === 'undefined') {
+            if (document.createElement('div').previousElementSibling === undef) {
                 Object.defineProperty(Element.prototype, 'previousElementSibling', {
                     get: function() {
                         var el = this.previousSibling;
@@ -292,6 +238,80 @@
                     return -1;
                 };
             }
+
+            /* Tests
+            ---------------------------------------------------------------------- */
+
+            //EddSelect.prototype._helpers.on(document.documentElement, 'mousemove', detectInput);
+
+        },
+
+        /**
+         * trawlDOM
+         * @since 3.0.0
+         */
+
+        _trawlDOM: function() {
+            var self = this,
+                selects = document.getElementsByTagName('select');
+
+            for (var i = 0, select; select = selects[i]; i++) {
+                if (self._helpers.hasClass(select, 'edd-select')) {
+                    new EddSelect(select);
+
+                    // TODO: allow for a custom configuration for autoloaded selects
+                }
+            }
+        },
+
+        /* Private Methods
+        ---------------------------------------------------------------------- */
+
+        /**
+         * init
+         * @since 3.0.0
+         */
+
+        _init: function() {
+            var self = this;
+
+            EddSelect.prototype._instances.push(self);
+
+            self._instanceIndex = EddSelect.prototype._instances.length;
+
+            self._parseSelect();
+            self._renderDropDown();
+            self._updateLabel();
+            self._bindEvents();
+
+            if (
+                self.animation.mixItUp &&
+                !self._grouped &&
+                typeof (jQuery || $) !== 'undefined' &&
+                typeof $.MixItUp !== 'undefined'
+            ) {
+                var config = (typeof self.animation.mixItUp === 'object') ? self.animation.mixItUp : {
+                    selectors: {
+                        target: '.'+self.markup.nameSpace + self.markup.itemClass
+                    },
+                    layout: {
+                        display: 'block'
+                    },
+                    load: {
+                        filter: 'none'
+                    },
+                    animation: {
+                        effects: 'fade translateY(-300%) translateZ(-300px) stagger(20ms)',
+                        duration: 150
+                    }
+                };
+
+                $(self._eddWrapper).addClass('mix-it-up');
+
+                self._$eddBody = $(self._eddBody).mixItUp(config);
+            } else {
+                self.animation.mixItUp = false;
+            }
         },
 
         /**
@@ -303,7 +323,10 @@
             var self = this,
                 hasLabel = false,
                 parseOption = function(option) {
-                    if (i === 0 && option.getAttribute('data-label') !== null) {
+                    if (
+                        i === 0 && 
+                        option.getAttribute('data-label') !== null
+                    ) {
                         self._label = option.innerText;
                         hasLabel = true;
                         return;
@@ -391,14 +414,14 @@
             self._eddSelectWrapper = div(classes.selectWrapperClass);
             self._eddLabel = div(classes.labelClass);
             self._eddCarat = div(classes.caratClass);
-            !self._nativeMode && (self._eddBody = div(classes.bodyClass));
+            self._eddBody = div(classes.bodyClass);
             self._eddItemsWrapper = div(classes.itemsWrapperClass);
             self._eddItems = [];
 
             frag.appendChild(self._eddWrapper);
-            !self._nativeMode && self._eddWrapper.appendChild(self._eddBody);
+            self._eddWrapper.appendChild(self._eddBody);
             self._eddWrapper.insertBefore(self._eddHead, self._eddBody);
-            !self._nativeMode && self._eddBody.appendChild(self._eddItemsWrapper);
+            self._eddBody.appendChild(self._eddItemsWrapper);
 
             parent.insertBefore(frag, self._select);
 
@@ -407,47 +430,48 @@
             self._eddHead.insertBefore(self._eddLabel, self._eddCarat);
             self._eddHead.insertBefore(self._eddSelectWrapper, self._eddLabel);
 
-            if (!self._nativeMode) {
-                for (var i = 0, item; item = self._items[i]; i++) {
+            for (var i = 0, item; item = self._items[i]; i++) {
 
-                    if (item.isGroup && !groupEl) {
-                        // Open group wrapper
-                        
-                        var labelEl = div(self.markup.groupLabelClass);
+                if (item.isGroup && !groupEl) {
+                    // Open group wrapper
+                    
+                    var labelEl = div(self.markup.groupLabelClass);
 
-                        labelEl.innerHTML = item.label;
+                    labelEl.innerHTML = item.label;
 
-                        groupEl = div(self.markup.groupClass);
+                    groupEl = div(self.markup.groupClass);
 
-                        groupEl.appendChild(labelEl);
+                    groupEl.appendChild(labelEl);
 
-                        self._eddItemsWrapper.appendChild(groupEl);
+                    self._eddItemsWrapper.appendChild(groupEl);
 
-                        inGroup = true;
-                        groupLength = item.totalChildren;
-                        self._items.splice(i,1);
-                        i--;
-                        continue;
-                    }
+                    inGroup = true;
+                    groupLength = item.totalChildren;
+                    
+                    self._items.splice(i,1);
+                    
+                    i--;
 
-                    var wrapper = inGroup ? groupEl : self._eddItemsWrapper,
-                        el = div(getItemClasses(item));
+                    continue;
+                }
 
-                    el.innerHTML = item.label ? item.label : item.text;
-                    self.items.addTitle && (el.title = item.label ? item.label : item.text);
+                var wrapper = inGroup ? groupEl : self._eddItemsWrapper,
+                    el = div(getItemClasses(item));
 
-                    wrapper.appendChild(el);
-                    self._eddItems.push(el);
+                el.innerHTML = item.label ? item.label : item.text;
+                self.items.addTitle && (el.title = item.label ? item.label : item.text);
 
-                    if (inGroup) {
-                        groupLength--;
+                wrapper.appendChild(el);
+                self._eddItems.push(el);
 
-                        if (!groupLength) {
-                            // Close group wrapper
+                if (inGroup) {
+                    groupLength--;
 
-                            inGroup = false;
-                            groupEl = null;
-                        }
+                    if (!groupLength) {
+                        // Close group wrapper
+
+                        inGroup = false;
+                        groupEl = null;
                     }
                 }
             }
@@ -560,7 +584,19 @@
             // Change event
 
             self._helpers.on(self._select, 'change', function(e) {
-                // !important: EDD's must only be changed via their own API
+                // !important: EDD's must only be changed via their own API, unless we are in nativemode
+                if (self._nativeMode) {
+                    var index = self._select.selectedIndex;
+
+                    if (self._nativeMode && self._label !== '') {
+                        if (index !== 0) {
+                            index--;
+                            self.select(index);
+                        } else {
+                            self.select(false);
+                        }
+                    }
+                }
             });
 
             // Keydown/up event while focused
@@ -623,8 +659,6 @@
 
                 self._helpers.on(this, 'click', function(e) {
                     var index = self._indexAll(e.target);
-
-                    self.select(index);
                 });
             });
         },
@@ -819,7 +853,7 @@
                 scrollLeft = window.scrollX || document.documentElement.scrollLeft,
                 scrollOffset = self._getScrollOffset(scrollTop, maxHeight);
 
-            if (!self._open) {
+            if (!self._open && !self._nativeMode) {
 
                 window.scrollTo(scrollLeft, scrollTop + scrollOffset);
 
@@ -886,14 +920,17 @@
         select: function(key) {
             var self = this,
                 option = null,
-                nativeKey = self._label !== '' ? key + 1 : key,
-                deselect = false;
+                nativeKey = (self._label !== '' && !self._nativeMode) ? key + 1 : key,
+                deselect = false,
+                clearSelected = function() {
+                    self._selectedIndices[0] && (self._items[self._selectedIndices[0]].selected = false);
+                };
 
             // Find native option
 
             if (typeof key === 'number') {
                 option = self._select.options[nativeKey];
-            } else {
+            } else if (typeof key === 'string') {
                 for (var i = 0, op; op = self._select.options[i]; i++) {
                     if (key === op.value) {
                         option = op;
@@ -901,6 +938,12 @@
                         break;
                     }
                 }
+            } else if (key === false) {
+                clearSelected();
+
+                self._selectedIndices = [];
+
+                self._updateLabel();
             }
 
             // TODO: allow passing of an array of multiple keys to select/deselect
@@ -910,11 +953,16 @@
                 // Manipulate model / native options
 
                 if (!self._multiple) {
-                    option.selected = true;
-                    self._selectedIndices[0] && (self._items[self._selectedIndices[0]].selected = false);
+                    !self._nativeMode && (option.selected = true);
+                    
+                    clearSelected();
+                    
                     self._items[key].selected = true;
                     self._selectedIndices[0] = key;
                 } else {
+
+                    // TODO: Account for multiple in native mode
+
                     if (!self._items[key].selected) {
                         option.selected = true;
                         self._selectedIndices.push(key);
@@ -951,11 +999,13 @@
 
                 // Trigger change event
 
-                self._helpers.trigger(self._select, 'change', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true
-                });
+                if (!self._nativeMode) {
+                    self._helpers.trigger(self._select, 'change', {
+                        'view': window,
+                        'bubbles': true,
+                        'cancelable': true
+                    });
+                }
             }
         },
 
@@ -1297,6 +1347,8 @@
         }
 
     };
+
+    EddSelect.prototype._platformDetect();
 
     // TODO: account for ie8, also account for ASM loading
 
