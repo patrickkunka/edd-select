@@ -1,3 +1,16 @@
+/**!
+ * EasyDropDown Select v3.0.0
+ *
+ * @copyright Copyright 2014 KunkaLabs Limited.
+ * @author    KunkaLabs Limited.
+ * @link      https://kunkalabs.com
+ *
+ * @license   Commercial use requires a commercial license.
+ *
+ *            Non-commercial use permitted under terms of CC-BY-NC license.
+ *            http://creativecommons.org/licenses/by-nc/3.0/
+ */
+
 (function(window, document, undef) {
 
     'use strict';
@@ -140,10 +153,10 @@
 
     EddSelect.prototype = {
 
-    	/* Version
+        /* Version
         ---------------------------------------------------------------------- */
 
-    	version: '3.0.0',
+        version: '3.0.0',
 
         /* Constructors
         ---------------------------------------------------------------------- */
@@ -182,15 +195,22 @@
                 detectInput = function(e) {
                     var proto = EddSelect.prototype;
 
-                    proto._hasMouse = true;
+                    if (e.type === 'mousemove') {
 
-                    for (var i = 0, instance; instance = proto._instances[i]; i++) {
-                        instance._nativeMode = false;
+                        proto._hasMouse = true;
 
-                        proto._helpers.removeClass(instance._eddWrapper, 'touch');
+                        for (var i = 0, instance; instance = proto._instances[i]; i++) {
+                            instance._nativeMode = false;
+
+                            proto._helpers.removeClass(instance._eddWrapper, 'touch');
+                        } 
+
+                    } else {
+                        
                     }
                     
                     proto._helpers.off(document.documentElement, 'mousemove', detectInput);
+                    proto._helpers.off(document.documentElement, 'touchstart', detectInput);
                 };
 
             /* Polyfills
@@ -244,7 +264,7 @@
             ---------------------------------------------------------------------- */
 
             EddSelect.prototype._helpers.on(document.documentElement, 'mousemove', detectInput);
-
+            EddSelect.prototype._helpers.on(document.documentElement, 'touchstart', detectInput);
         },
 
         /**
@@ -281,6 +301,8 @@
             self._instanceIndex = EddSelect.prototype._instances.length;
 
             self._form = self._helpers.closestParent(self._select, null, 'form');
+
+            EddSelect.prototype._hasMouse && (self._nativeMode = false);
 
             self._parseSelect();
             self._renderDropDown();
@@ -478,6 +500,8 @@
                     }
                 }
             }
+
+            !self._nativeMode && self._helpers.removeClass(self._eddWrapper, 'touch');
         },
 
         /**
@@ -549,7 +573,8 @@
 
         _bindEvents: function() {
             var self = this,
-                ns = self.markup.nameSpace;
+                ns = self.markup.nameSpace,
+                scrollBlock = null;
 
             // Click to open + focus
 
@@ -572,8 +597,6 @@
             self._helpers.on(self._eddHead, 'mouseup', function(e) {
                 self._clicking = false;
             });
-
-            // Click to blur
 
             self._helpers.on(document.documentElement, 'click', function(e) {
                 if (
@@ -626,13 +649,23 @@
                     self._helpers.removeClass(self._eddWrapper, self.markup.focusClass);
                     self._inFocus = false;
                     self.close();
+                } else {
+                    self._select.focus();
                 }
             });
 
-            // Internal sroll event
+            // ItemsWrapper handlers
 
             self._helpers.on(self._eddItemsWrapper, 'scroll', function(e) {
                 self._renderScrollClasses();
+            });
+
+            self._helpers.on(self._eddItemsWrapper, 'mousedown', function(e) {
+                self._clicking = true;
+            });
+
+            self._helpers.on(self._eddItemsWrapper, 'mouseup', function(e) {
+                self._clicking = false;
             });
 
             // Reset event
@@ -865,6 +898,7 @@
                 scrollOffset = self._getScrollOffset(scrollTop, maxHeight);
 
             if (!self._open && !self._nativeMode) {
+                self.closeAll();
 
                 window.scrollTo(scrollLeft, scrollTop + scrollOffset);
 
@@ -952,12 +986,27 @@
             } else if (key === false) {
                 clearSelected();
 
-                self._selectedIndices = [];
+                if (self._label === '' && !self._multiple) {
+                    self._selectedIndices = [0];
+                    option = self._select.options[0];
+                    key = 0;
+                } else {
+                    self._selectedIndices = []
+                }
 
                 self._updateLabel();
 
                 !self._nativeMode && (self._select.options[0].selected = true);
             }
+
+            // Remove active styling for all options
+
+            if (!self._multiple) {
+                self._helpers.forEachItem(self, function(i) {
+                    self._helpers.removeClass(this, self.markup.selectedClass);
+                });
+            }
+
 
             // TODO: allow passing of an array of multiple keys to select/deselect
 
@@ -988,11 +1037,9 @@
                     }
                 }
 
-                // Manipulate EDD Items
+                // Add active styling for options
 
                 self._helpers.forEachItem(self, function(i) {
-                    !self._multiple && self._helpers.removeClass(this, self.markup.selectedClass);
-
                     if (i === key) {
                         self._helpers[(deselect ? 'remove' : 'add')+'Class'](this, self.markup.selectedClass);
                     }
