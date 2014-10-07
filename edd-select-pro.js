@@ -153,10 +153,10 @@
 
     EddSelect.prototype = {
 
-        /* Version
+    	/* Version
         ---------------------------------------------------------------------- */
 
-        version: '3.0.0',
+    	version: '3.0.0',
 
         /* Constructors
         ---------------------------------------------------------------------- */
@@ -873,7 +873,7 @@
                     min: scrollTop,
                     max: scrollTop + (window.innerHeight || document.documentElement.clientHeight)
                 },
-                menuBottom = self._eddBody.offsetTop + self._eddWrapper.getBoundingClientRect().top + maxHeight; 
+                menuBottom = scrollTop + self._eddBody.offsetTop + self._eddWrapper.getBoundingClientRect().top + maxHeight; 
 
             if (menuBottom >= range.min && menuBottom <= range.max) {
                 return 0;
