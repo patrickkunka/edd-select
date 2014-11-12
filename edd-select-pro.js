@@ -153,10 +153,10 @@
 
     EddSelect.prototype = {
 
-    	/* Version
+        /* Version
         ---------------------------------------------------------------------- */
 
-    	version: '3.0.0',
+        version: '3.0.0',
 
         /* Constructors
         ---------------------------------------------------------------------- */
@@ -515,7 +515,7 @@
                 selected = self._items[self._selectedIndices[0]],
                 label = self._label || self.label.def;
 
-            self._helpers[((selected || text) ? 'add' : 'remove') + 'Class'](self._eddWrapper, 'selected');
+            self._helpers[((selected && selected.value !== '') ? 'add' : 'remove')+'Class'](self._eddWrapper, 'selected');
 
             if (selected && self._multiple) {
                 if (self.label.tags) {
