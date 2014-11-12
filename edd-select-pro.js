@@ -614,12 +614,16 @@
                 if (self._nativeMode) {
                     var index = self._select.selectedIndex;
 
-                    if (self._nativeMode && self._label !== '') {
-                        if (index !== 0) {
-                            index--;
-                            self.select(index);
+                    if (self._nativeMode) {
+                        if (self._label !== '') {
+                            if (index !== 0) {
+                                index--;
+                                self.select(index);
+                            } else {
+                                self.select(false);
+                            }
                         } else {
-                            self.select(false);
+                            self.select(index);
                         }
                     }
                 }
