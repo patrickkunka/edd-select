@@ -109,6 +109,11 @@
                 _resetQueryDelay: 1200,
                 _resetQueryTimeout: null,
                 _typing: false,
+                _selecting: false,
+
+                _pollInterval: null,
+                _currentValue: '',
+                _newValue: '',
 
                 _eddWrapper: null,
                 _eddHead: null,
@@ -264,6 +269,7 @@
             ---------------------------------------------------------------------- */
 
             EddSelect.prototype._helpers.on(document.documentElement, 'mousemove', detectInput);
+            EddSelect.prototype._helpers.on(document.documentElement, 'mousewheel', detectInput);
             EddSelect.prototype._helpers.on(document.documentElement, 'touchstart', detectInput);
         },
 
@@ -308,6 +314,7 @@
             self._renderDropDown();
             self._updateLabel();
             self._bindEvents();
+            self._pollChange();
 
             if (
                 self.animation.mixItUp &&
@@ -370,6 +377,8 @@
             self._name = self._select.name;
             self._multiple = !!self._select.multiple;
             self._autofocus = self._select.autofocus;
+
+            self._currentValue = self._newValue = self._select.value;
 
             self._items = [];
 
@@ -610,7 +619,6 @@
             // Change event
 
             self._helpers.on(self._select, 'change', function(e) {
-                // !important: EDD's must only be changed via their own API, unless we are in nativemode
                 if (self._nativeMode) {
                     var index = self._select.selectedIndex;
 
@@ -626,8 +634,8 @@
                             self.select(index);
                         }
                     }
-                } else {
-                    // TODO: Account for form autofilling
+                } else if (!self._selecting) {
+                    self.select(self._currentValue);
                 }
             });
 
@@ -711,6 +719,29 @@
                     self.select(index);
                 });
             });
+        },
+
+        /**
+         * pollChange
+         * @since 3.0.0
+         */
+
+        _pollChange: function() {
+            var self = this;
+                
+            self._pollInterval = setInterval(function() {
+                self._newValue = self._select.value;
+
+                if (!self._selecting && self._newValue !== self._currentValue) {
+                    self._currentValue = self._newValue;
+
+                    self._helpers.trigger(self._select, 'change', {
+                        'view': window,
+                        'bubbles': true,
+                        'cancelable': true
+                    });
+                }
+            }, 200);
         },
 
         /**
@@ -975,12 +1006,22 @@
                 deselect = false,
                 clearSelected = function() {
                     self._selectedIndices[0] && (self._items[self._selectedIndices[0]].selected = false);
-                };
+                },
+                blockPoll = setTimeout(function() {
+                    self._selecting = false;
+                }, 300);
 
-            // Find native option
+            // Block poll from triggering;
+
+            self._selecting = true;
+
+            // Select by numeric index
 
             if (typeof key === 'number') {
                 option = self._select.options[nativeKey];
+
+            // Select by string value
+
             } else if (typeof key === 'string') {
                 for (var i = 0, op; op = self._select.options[i]; i++) {
                     if (key === op.value) {
@@ -989,6 +1030,9 @@
                         break;
                     }
                 }
+
+            // Reset to null
+
             } else if (key === false) {
                 clearSelected();
 
@@ -1055,6 +1099,10 @@
 
                 self._updateLabel();
 
+                // Update polling values
+
+                self._currentValue = self._newValue = self._select.value;
+
                 // Close
 
                 !self._multiple && self.close();
@@ -1109,6 +1157,8 @@
             parent.insertBefore(self._select, self._eddWrapper);
 
             parent.removeChild(self._eddWrapper);
+
+            clearInterval(self._pollInterval);
 
             delete EddSelect.prototype._instances[self._instanceIndex - 1];
 
@@ -1420,14 +1470,14 @@
 
     // TODO: Account for AMD loading, module.exports etc
 
-    document.addEventListener('DOMContentLoaded', function(){
-        EddSelect.prototype._trawlDOM();
-    });
-
     if (!document.addEventListener) {
-        document.attachEvent('DOMContentLoaded', EddSelect.prototype._trawlDOM);    
+        document.attachEvent('DOMContentLoaded', function() {
+            EddSelect.prototype._trawlDOM();
+        });    
     } else {
-        document.addEventListener('DOMContentLoaded', EddSelect.prototype._trawlDOM);
+        document.addEventListener('DOMContentLoaded', function() {
+            EddSelect.prototype._trawlDOM();
+        });
     }
 
     window.EddSelect = EddSelect;
