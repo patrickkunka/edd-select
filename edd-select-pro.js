@@ -626,6 +626,8 @@
                             self.select(index);
                         }
                     }
+                } else {
+                    // TODO: Account for form autofilling
                 }
             });
 
@@ -1416,11 +1418,17 @@
 
     EddSelect.prototype._platformDetect();
 
-    // TODO: account for ie8, also account for ASM loading
+    // TODO: Account for AMD loading, module.exports etc
 
     document.addEventListener('DOMContentLoaded', function(){
         EddSelect.prototype._trawlDOM();
     });
+
+    if (!document.addEventListener) {
+        document.attachEvent('DOMContentLoaded', EddSelect.prototype._trawlDOM);    
+    } else {
+        document.addEventListener('DOMContentLoaded', EddSelect.prototype._trawlDOM);
+    }
 
     window.EddSelect = EddSelect;
 
