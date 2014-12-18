@@ -635,7 +635,7 @@
                         }
                     }
                 } else if (!self._selecting) {
-                    self.select(self._currentValue);
+                    self.select(self._currentValue, true);
                 }
             });
 
@@ -997,9 +997,11 @@
         /**
          * select
          * @since 3.0.0
+         * @param {Number|String} key
+         * @param {Boolean} programmatic
          */
 
-        select: function(key) {
+        select: function(key, programmatic) {
             var self = this,
                 option = null,
                 nativeKey = (self._label !== '' && !self._nativeMode) ? key + 1 : key,
@@ -1023,10 +1025,11 @@
             // Select by string value
 
             } else if (typeof key === 'string') {
-                for (var i = 0, op; op = self._select.options[i]; i++) {
-                    if (key === op.value) {
-                        option = op;
+                for (var i = 0, item; item = self._items[i]; i++) {
+                    if (key === item.value) {
                         key = i;
+                        nativeKey = (self._label !== '' && !self._nativeMode) ? key + 1 : key;
+                        option = self._select.options[nativeKey];
                         break;
                     }
                 }
@@ -1109,7 +1112,9 @@
 
                 // Re-focus
 
-                self._select.focus();
+                if (!programmatic) {
+                    self._select.focus();
+                }
 
                 // Trigger change event
 
