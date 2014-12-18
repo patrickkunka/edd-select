@@ -49,7 +49,8 @@
 
                 scrolling: {
                     maxItems: 6,
-                    maxHeight: false
+                    maxHeight: false,
+                    openAbove: false
                 },
 
                 markup: {
@@ -71,6 +72,7 @@
                     focusClass: 'focus',
                     openClass: 'open',
                     scrollableClass: 'scrollable',
+                    openAboveClass: 'open-above',
                     disabledClass: 'disabled',
                     topClass: 'top',
                     bottomClass: 'bottom'
@@ -463,6 +465,8 @@
             self._eddHead.appendChild(self._eddCarat);
             self._eddHead.insertBefore(self._eddLabel, self._eddCarat);
             self._eddHead.insertBefore(self._eddSelectWrapper, self._eddLabel);
+
+            self.scrolling.openAbove && self._helpers.addClass(self._eddWrapper, self.markup.openAboveClass);
 
             for (var i = 0, item; item = self._items[i]; i++) {
 
@@ -937,7 +941,9 @@
             if (!self._open && !self._nativeMode) {
                 self.closeAll();
 
-                window.scrollTo(scrollLeft, scrollTop + scrollOffset);
+                !self.scrolling.openAbove && window.scrollTo(scrollLeft, scrollTop + scrollOffset);
+
+                // TODO: don't disable, just send the opposite direction
 
                 self._scrollToView();
                 self._renderScrollClasses();
