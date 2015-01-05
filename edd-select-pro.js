@@ -216,8 +216,8 @@
                         
                     }
                     
-                    proto._helpers.off(document.documentElement, 'mousemove', detectInput);
-                    proto._helpers.off(document.documentElement, 'touchstart', detectInput);
+                    _helpers._off(document.documentElement, 'mousemove', detectInput);
+                    _helpers._off(document.documentElement, 'touchstart', detectInput);
                 };
 
             /* Polyfills
@@ -267,12 +267,12 @@
                 };
             }
 
-            /* Tests
+            /* Input Tests
             ---------------------------------------------------------------------- */
 
-            EddSelect.prototype._helpers.on(document.documentElement, 'mousemove', detectInput);
-            EddSelect.prototype._helpers.on(document.documentElement, 'mousewheel', detectInput);
-            EddSelect.prototype._helpers.on(document.documentElement, 'touchstart', detectInput);
+            _helpers._on(document.documentElement, 'mousemove', detectInput);
+            _helpers._on(document.documentElement, 'mousewheel', detectInput);
+            _helpers._on(document.documentElement, 'touchstart', detectInput);
         },
 
         /**
@@ -285,7 +285,7 @@
                 selects = document.getElementsByTagName('select');
 
             for (var i = 0, select; select = selects[i]; i++) {
-                if (self._helpers.hasClass(select, 'edd-select')) {
+                if (_helpers._hasClass(select, 'edd-select')) {
                     new EddSelect(select);
 
                     // TODO: allow for a custom configuration for autoloaded selects
@@ -308,7 +308,7 @@
 
             self._instanceIndex = EddSelect.prototype._instances.length;
 
-            self._form = self._helpers.closestParent(self._select, null, 'form');
+            self._form = _helpers._closestParent(self._select, null, 'form');
 
             EddSelect.prototype._hasMouse && (self._nativeMode = false);
 
@@ -466,7 +466,7 @@
             self._eddHead.insertBefore(self._eddLabel, self._eddCarat);
             self._eddHead.insertBefore(self._eddSelectWrapper, self._eddLabel);
 
-            self.scrolling.openAbove && self._helpers.addClass(self._eddWrapper, self.markup.openAboveClass);
+            self.scrolling.openAbove && _helpers._addClass(self._eddWrapper, self.markup.openAboveClass);
 
             for (var i = 0, item; item = self._items[i]; i++) {
 
@@ -514,7 +514,7 @@
                 }
             }
 
-            !self._nativeMode && self._helpers.removeClass(self._eddWrapper, 'touch');
+            !self._nativeMode && _helpers._removeClass(self._eddWrapper, 'touch');
         },
 
         /**
@@ -528,7 +528,7 @@
                 selected = self._items[self._selectedIndices[0]],
                 label = self._label || self.label.def;
 
-            self._helpers[((selected && selected.value !== '') ? 'add' : 'remove')+'Class'](self._eddWrapper, 'selected');
+            _helpers[((selected && selected.value !== '') ? '_add' : '_remove')+'Class'](self._eddWrapper, 'selected');
 
             if (selected && self._multiple) {
                 if (self.label.tags) {
@@ -543,12 +543,12 @@
                     self._eddLabel.innerHTML = label + ' (' + self._selectedIndices.length + ')';
                 }
             } else if (text) {
-                self._helpers.removeClass(self._eddWrapper, 'selected');
+                _helpers._removeClass(self._eddWrapper, 'selected');
                 self._eddLabel.innerHTML = text;
             } else if (selected) {
                 self._eddLabel.innerHTML = selected.label ? selected.label : selected.text;
             } else {
-                self._helpers.removeClass(self._eddWrapper, 'selected');
+                _helpers._removeClass(self._eddWrapper, 'selected');
                 self._eddLabel.innerHTML = label;
             }
         },
@@ -572,11 +572,11 @@
                 prevSiblings = 0,
                 ns = self.markup.nameSpace;
 
-            if(self._helpers.hasClass(el.parentElement, ns+self.markup.groupClass)) {
-                prevSiblings = self._helpers.prevSiblings(el, ns+self.markup.itemClass);
+            if(_helpers._hasClass(el.parentElement, ns+self.markup.groupClass)) {
+                prevSiblings = _helpers._prevSiblings(el, ns+self.markup.itemClass);
             }
 
-            return self._helpers.index(el, ns+self.markup.itemClass) + prevSiblings;
+            return _helpers._index(el, ns+self.markup.itemClass) + prevSiblings;
         },
 
         /**
@@ -591,9 +591,9 @@
 
             // Click to open + focus
 
-            self._helpers.on(self._eddHead, 'click', function(e) {
-                if (self._helpers.hasClass(e.target, ns+self.markup.tagClass)) {
-                    var index = self._helpers.index(e.target, ns+self.markup.tagClass);
+            _helpers._on(self._eddHead, 'click', function(e) {
+                if (_helpers._hasClass(e.target, ns+self.markup.tagClass)) {
+                    var index = _helpers._index(e.target, ns+self.markup.tagClass);
 
                     self.select(self._selectedIndices[index]);
                 } else {
@@ -603,18 +603,18 @@
                 }
             });
 
-            self._helpers.on(self._eddHead, 'mousedown', function(e) {
+            _helpers._on(self._eddHead, 'mousedown', function(e) {
                 self._clicking = true;
             });
 
-            self._helpers.on(self._eddHead, 'mouseup', function(e) {
+            _helpers._on(self._eddHead, 'mouseup', function(e) {
                 self._clicking = false;
             });
 
-            self._helpers.on(document.documentElement, 'click', function(e) {
+            _helpers._on(document.documentElement, 'click', function(e) {
                 if (
                     self._open && 
-                    !self._helpers.closestParent(e.target, self.markup.nameSpace+self.markup.wrapperClass)
+                    !_helpers._closestParent(e.target, self.markup.nameSpace+self.markup.wrapperClass)
                 ) {
                     self.close();
                 }
@@ -622,7 +622,7 @@
 
             // Change event
 
-            self._helpers.on(self._select, 'change', function(e) {
+            _helpers._on(self._select, 'change', function(e) {
                 if (self._nativeMode) {
                     var index = self._select.selectedIndex;
 
@@ -645,26 +645,26 @@
 
             // Keydown/up event while focused
 
-            self._helpers.on(self._select, 'keydown', function(e) {
+            _helpers._on(self._select, 'keydown', function(e) {
                 !self._nativeMode && self._keydown(e);
             });
 
-            self._helpers.on(self._select, 'keyup', function(e) {
+            _helpers._on(self._select, 'keyup', function(e) {
                 !self._nativeMode && self._keyup(e);
             });
 
             // Focus event
 
-            self._helpers.on(self._select, 'focus', function(e) {
-                self._helpers.addClass(self._eddWrapper, self.markup.focusClass);
+            _helpers._on(self._select, 'focus', function(e) {
+                _helpers._addClass(self._eddWrapper, self.markup.focusClass);
                 self._inFocus = true;
             });
 
             // Blur event
 
-            self._helpers.on(self._select, 'blur', function(e) {
+            _helpers._on(self._select, 'blur', function(e) {
                 if (!self._clicking) {
-                    self._helpers.removeClass(self._eddWrapper, self.markup.focusClass);
+                    _helpers._removeClass(self._eddWrapper, self.markup.focusClass);
                     self._inFocus = false;
                     self.close();
                 } else {
@@ -674,50 +674,50 @@
 
             // ItemsWrapper handlers
 
-            self._helpers.on(self._eddItemsWrapper, 'scroll', function(e) {
+            _helpers._on(self._eddItemsWrapper, 'scroll', function(e) {
                 self._renderScrollClasses();
             });
 
-            self._helpers.on(self._eddItemsWrapper, 'mousedown', function(e) {
+            _helpers._on(self._eddItemsWrapper, 'mousedown', function(e) {
                 self._clicking = true;
             });
 
-            self._helpers.on(self._eddItemsWrapper, 'mouseup', function(e) {
+            _helpers._on(self._eddItemsWrapper, 'mouseup', function(e) {
                 self._clicking = false;
             });
 
             // Reset event
 
-            self._form && self._helpers.on(self._form, 'reset', function() {
+            self._form && _helpers._on(self._form, 'reset', function() {
                 self.select(false);
             });
 
             // Item handlers
 
-            self._helpers.forEachItem(self, function() {
-                self._helpers.on(this, 'mouseenter', function() {
+            _helpers._forEachItem(self, function() {
+                _helpers._on(this, 'mouseenter', function() {
                     if (self._open && !self._scrollingToView) {
                         self._focusedIndex = self._indexAll(this);
                         self._focusItem();
                     }
                 });
 
-                self._helpers.on(this, 'mouseleave', function() {
+                _helpers._on(this, 'mouseleave', function() {
                     if (self._open && !self._scrollingToView) {
                         self._focusedIndex = false;
-                        self._helpers.removeClass(this, self.markup.focusClass);
+                        _helpers._removeClass(this, self.markup.focusClass);
                     }
                 });
 
-                self._helpers.on(this, 'mousedown', function(e) {
+                _helpers._on(this, 'mousedown', function(e) {
                     self._clicking = true;
                 });
 
-                self._helpers.on(this, 'mouseup', function(e) {
+                _helpers._on(this, 'mouseup', function(e) {
                     self._clicking = false;
                 });
 
-                self._helpers.on(this, 'click', function(e) {
+                _helpers._on(this, 'click', function(e) {
                     var index = self._indexAll(e.target);
                     
                     self.select(index);
@@ -739,7 +739,7 @@
                 if (!self._selecting && self._newValue !== self._currentValue) {
                     self._currentValue = self._newValue;
 
-                    self._helpers.trigger(self._select, 'change', {
+                    _helpers._trigger(self._select, 'change', {
                         'view': window,
                         'bubbles': true,
                         'cancelable': true
@@ -756,12 +756,12 @@
         _focusItem: function() {
             var self = this;
 
-            self._helpers.forEachItem(self, function() {
-                self._helpers.removeClass(this, self.markup.focusClass);
+            _helpers._forEachItem(self, function() {
+                _helpers._removeClass(this, self.markup.focusClass);
             });
 
             if (self._focusedIndex !== false && self._focusedIndex < self._items.length) {
-                !self._items[self._focusedIndex].disabled && self._helpers.addClass(self._eddItems[self._focusedIndex], self.markup.focusClass);
+                !self._items[self._focusedIndex].disabled && _helpers._addClass(self._eddItems[self._focusedIndex], self.markup.focusClass);
             }
         },
 
@@ -812,24 +812,24 @@
 
             if (self._eddItemsWrapper.scrollTop >= self._eddItemsWrapper.scrollHeight - self._eddBody.offsetHeight) {
                 if (!self._atTop) {
-                    self._helpers.addClass(self._eddWrapper, self.markup.bottomClass);
+                    _helpers._addClass(self._eddWrapper, self.markup.bottomClass);
                     self._atTop = true;
                 }
             } else {
                 if(self._atTop) {
-                    self._helpers.removeClass(self._eddWrapper, self.markup.bottomClass);
+                    _helpers._removeClass(self._eddWrapper, self.markup.bottomClass);
                     self._atTop = false;
                 }
             }
 
             if (self._eddItemsWrapper.scrollTop === 0) {
                 if (!self._atBottom) {
-                    self._helpers.addClass(self._eddWrapper, self.markup.topClass);
+                    _helpers._addClass(self._eddWrapper, self.markup.topClass);
                     self._atBottom = true;
                 }
             } else {
                 if (self._atBottom) {
-                    self._helpers.removeClass(self._eddWrapper, self.markup.topClass);
+                    _helpers._removeClass(self._eddWrapper, self.markup.topClass);
                     self._atBottom = false;
                 }
             }
@@ -949,7 +949,7 @@
                 self._renderScrollClasses();
 
                 if (self._scrollable) {
-                    self._helpers.addClass(self._eddWrapper, self.markup.scrollableClass);
+                    _helpers._addClass(self._eddWrapper, self.markup.scrollableClass);
                 }
 
                 if (!self.animation.mixItUp) {
@@ -962,7 +962,7 @@
                     self._updateLabel(self._label);
                 } 
 
-                self._helpers.addClass(self._eddWrapper, self.markup.openClass);
+                _helpers._addClass(self._eddWrapper, self.markup.openClass);
 
                 self._open = true;
             }
@@ -987,11 +987,11 @@
                     self._updateLabel();
                 } 
 
-                self._helpers.removeClass(self._eddWrapper, self.markup.openClass);
-                self._helpers.removeClass(self._eddWrapper, self.markup.scrollableClass);
+                _helpers._removeClass(self._eddWrapper, self.markup.openClass);
+                _helpers._removeClass(self._eddWrapper, self.markup.scrollableClass);
 
-                self._helpers.forEachItem(self, function(i) {
-                    self._helpers.removeClass(this, self.markup.focusClass);
+                _helpers._forEachItem(self, function(i) {
+                    _helpers._removeClass(this, self.markup.focusClass);
                 });
 
                 self._query = '';
@@ -1061,8 +1061,8 @@
             // Remove active styling for all options
 
             if (!self._multiple) {
-                self._helpers.forEachItem(self, function(i) {
-                    self._helpers.removeClass(this, self.markup.selectedClass);
+                _helpers._forEachItem(self, function(i) {
+                    _helpers._removeClass(this, self.markup.selectedClass);
                 });
             }
 
@@ -1098,9 +1098,9 @@
 
                 // Add active styling for options
 
-                self._helpers.forEachItem(self, function(i) {
+                _helpers._forEachItem(self, function(i) {
                     if (i === key) {
-                        self._helpers[(deselect ? 'remove' : 'add')+'Class'](this, self.markup.selectedClass);
+                        _helpers[(deselect ? '_remove' : '_add')+'Class'](this, self.markup.selectedClass);
                     }
                 });
 
@@ -1125,7 +1125,7 @@
                 // Trigger change event
 
                 if (!self._nativeMode) {
-                    self._helpers.trigger(self._select, 'change', {
+                    _helpers._trigger(self._select, 'change', {
                         'view': window,
                         'bubbles': true,
                         'cancelable': true
@@ -1176,150 +1176,6 @@
             EddSelect.prototype._instances.splice(self._instanceIndex - 1, 1);
 
             // TODO: may need to unbind any handlers applied to select element
-        },
-
-        /* Helpers
-        ---------------------------------------------------------------------- */
-
-        _helpers: {
-
-            /**
-             * on
-             * @since 3.0.0
-             */
-
-            on: function(el, type, fn, useCapture) {
-                if (el.attachEvent) {
-                    el['e'+type+fn] = fn;
-                    el[type+fn] = function(){el['e'+type+fn](window.event);};
-                    el.attachEvent('on'+type, el[type+fn]);
-                } else
-                    el.addEventListener(type, fn, useCapture);
-            },
-
-            /**
-             * off
-             * @since 3.0.0
-             */
-
-            off: function(el, type, fn) {
-                if (el.detachEvent) {
-                    el.detachEvent('on'+type, el[type+fn]);
-                    el[type+fn] = null;
-                } else
-                    el.removeEventListener(type, fn, false);
-            },
-
-            /**
-             * hasClass
-             * @since 3.0.0
-             */
-
-            hasClass: function(el, cls) {
-                return el.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
-            },
-
-            /**
-             * addClass
-             * @since 3.0.0
-             */
-
-            addClass: function(el, cls) {
-                if (!this.hasClass(el, cls)) el.className += el.className ? ' '+cls : cls;
-            },
-
-            /**
-             * removeClass
-             * @since 3.0.0
-             */
-
-            removeClass: function(el, cls) {
-                if (this.hasClass(el, cls)) {
-                    var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-                    el.className = el.className.replace(reg, ' ').trim();
-                }
-            },
-
-            /**
-             * prevSiblings
-             * @since 3.0.0
-             */
-
-            prevSiblings: function(el, match) {
-                var group = el.parentElement,
-                    wrapper = group ? group.parentElement : false,
-                    index = this.index(group),
-                    total = 0;
-
-                for (var i = 0; i < index; i++) {
-                    var item = wrapper.children[i],
-                        children = match ? item.getElementsByClassName(match) : item.children;
-
-                    if (children.length) {
-                        total += children.length;
-                    } else {
-                        total++;
-                    }
-                }
-
-                return total;
-            },
-
-            /**
-             * index
-             * @since 3.0.0
-             */
-
-            index: function(el, match) {
-                var i = 0;
-
-                while((el = el.previousElementSibling)!== null) {
-                    if (!match || this.hasClass(el, match)) {
-                        ++i;   
-                    }
-                }
-                return i;
-            },
-
-            /**
-             * forEachItem
-             * @since 3.0.0
-             */
-
-            forEachItem: function(self, fn) {
-                for (var i = 0, eddItem; eddItem = self._eddItems[i]; i++) {
-                    (typeof fn === 'function') && fn.call(eddItem, i);
-                }
-            },
-
-            /**
-             * closestParent
-             * @since 3.0.0
-             */
-
-            closestParent: function(el, cls, tag) {
-                var parent = el.parentNode;
-                while (parent && parent != document.body) {
-                    if (cls && parent && this.hasClass(parent, cls)) {
-                        return parent;
-                    } else if (tag && parent && parent.nodeName === tag.toUpperCase()) {
-                        return parent;
-                    } else {
-                       parent = parent.parentNode;
-                    }
-                }
-                return null;
-            },
-
-            /**
-             * trigger
-             * @since 3.0.0
-             */
-
-            trigger: function(el, eventName, config) {
-                var event = new Event(eventName, config);
-                el.dispatchEvent(event);
-            }
         },
 
         /* Event Handlers
@@ -1474,7 +1330,150 @@
                 }
             }, self._resetQueryDelay);
         }
+    };
 
+    /* Helpers
+    ---------------------------------------------------------------------- */
+
+    var _helpers = {
+
+        /**
+         * on
+         * @since 3.0.0
+         */
+
+        _on: function(el, type, fn, useCapture) {
+            if (el.attachEvent) {
+                el['e'+type+fn] = fn;
+                el[type+fn] = function(){el['e'+type+fn](window.event);};
+                el.attachEvent('on'+type, el[type+fn]);
+            } else
+                el.addEventListener(type, fn, useCapture);
+        },
+
+        /**
+         * off
+         * @since 3.0.0
+         */
+
+        _off: function(el, type, fn) {
+            if (el.detachEvent) {
+                el.detachEvent('on'+type, el[type+fn]);
+                el[type+fn] = null;
+            } else
+                el.removeEventListener(type, fn, false);
+        },
+
+        /**
+         * hasClass
+         * @since 3.0.0
+         */
+
+        _hasClass: function(el, cls) {
+            return el.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+        },
+
+        /**
+         * addClass
+         * @since 3.0.0
+         */
+
+        _addClass: function(el, cls) {
+            if (!this._hasClass(el, cls)) el.className += el.className ? ' '+cls : cls;
+        },
+
+        /**
+         * removeClass
+         * @since 3.0.0
+         */
+
+        _removeClass: function(el, cls) {
+            if (this._hasClass(el, cls)) {
+                var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+                el.className = el.className.replace(reg, ' ').trim();
+            }
+        },
+
+        /**
+         * prevSiblings
+         * @since 3.0.0
+         */
+
+        _prevSiblings: function(el, match) {
+            var group = el.parentElement,
+                wrapper = group ? group.parentElement : false,
+                index = this.index(group),
+                total = 0;
+
+            for (var i = 0; i < index; i++) {
+                var item = wrapper.children[i],
+                    children = match ? item.getElementsByClassName(match) : item.children;
+
+                if (children.length) {
+                    total += children.length;
+                } else {
+                    total++;
+                }
+            }
+
+            return total;
+        },
+
+        /**
+         * index
+         * @since 3.0.0
+         */
+
+        _index: function(el, match) {
+            var i = 0;
+
+            while((el = el.previousElementSibling)!== null) {
+                if (!match || this._hasClass(el, match)) {
+                    ++i;   
+                }
+            }
+            return i;
+        },
+
+        /**
+         * forEachItem
+         * @since 3.0.0
+         */
+
+        _forEachItem: function(self, fn) {
+            for (var i = 0, eddItem; eddItem = self._eddItems[i]; i++) {
+                (typeof fn === 'function') && fn.call(eddItem, i);
+            }
+        },
+
+        /**
+         * closestParent
+         * @since 3.0.0
+         */
+
+        _closestParent: function(el, cls, tag) {
+            var parent = el.parentNode;
+            while (parent && parent != document.body) {
+                if (cls && parent && this._hasClass(parent, cls)) {
+                    return parent;
+                } else if (tag && parent && parent.nodeName === tag.toUpperCase()) {
+                    return parent;
+                } else {
+                   parent = parent.parentNode;
+                }
+            }
+            return null;
+        },
+
+        /**
+         * trigger
+         * @since 3.0.0
+         */
+
+        _trigger: function(el, eventName, config) {
+            var event = new Event(eventName, config);
+            el.dispatchEvent(event);
+        }
     };
 
     EddSelect.prototype._platformDetect();
