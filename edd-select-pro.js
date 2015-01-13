@@ -12,7 +12,6 @@
  */
 
 (function(window, document, undef) {
-
     'use strict';
 
     /**
@@ -209,7 +208,7 @@
                         for (var i = 0, instance; instance = proto._instances[i]; i++) {
                             instance._nativeMode = false;
 
-                            proto._helpers.removeClass(instance._eddWrapper, 'touch');
+                            _helpers._removeClass(instance._eddWrapper, 'touch');
                         } 
 
                     } else {
@@ -668,7 +667,7 @@
                     self._inFocus = false;
                     self.close();
                 } else {
-                    self._select.focus();
+                    !self._nativeMode && self._select.focus();
                 }
             });
 
