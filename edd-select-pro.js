@@ -1470,7 +1470,18 @@
          */
 
         _trigger: function(el, eventName, config) {
-            var event = new Event(eventName, config);
+            var event = null,
+                canBubble = (typeof config === 'object') ? config.bubbles || true : true,
+                cancelable = (typeof config === 'object') ? config.cancelable || true : true;
+
+            if (window.Event) {
+                event = new Event(eventName, config);
+            } else {
+                event = document.createEvent('HTMLEvents');
+
+                event.initEvent(eventName, canBubble, cancelable);
+            }
+
             el.dispatchEvent(event);
         }
     };
