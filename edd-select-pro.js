@@ -1474,7 +1474,7 @@
                 canBubble = (typeof config === 'object') ? config.bubbles || true : true,
                 cancelable = (typeof config === 'object') ? config.cancelable || true : true;
 
-            if (window.Event) {
+            if (typeof window.Event === 'function') {
                 event = new Event(eventName, config);
             } else {
                 event = document.createEvent('HTMLEvents');
