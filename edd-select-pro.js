@@ -1500,6 +1500,12 @@
         });
     }
 
-    window.EddSelect = EddSelect;
+    if ( typeof module != 'undefined' && module.exports ) {
+        module.exports = EddSelect;
+    } else if (typeof define === 'function' && define.amd) {
+        define(function(){ return EddSelect; });
+    } else {
+        window.EddSelect = EddSelect;
+    }
 
 })(window, document);
