@@ -360,7 +360,7 @@
                         i === 0 && 
                         option.getAttribute('data-label') !== null
                     ) {
-                        self._label = option.innerText;
+                        self._label = option.textContent || option.innerText;
                         hasLabel = true;
                         return;
                     }
