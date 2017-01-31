@@ -1,0 +1,6 @@
+{
+  "name": "edd-select",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./edd-select-pro.js"
+}
